@@ -11,6 +11,7 @@ confinement: classic
 apps:
     jenkins:
         environment:
+          SNAPCRAFT_BUILD_ENVIRONMENT: "host snapcraft --target-arch arm64"
           XDG_DATA_HOME: "$SNAP/usr/share"
           FONTCONFIG_PATH: "$SNAP/etc/fonts"
           JAVA_HOME: "$SNAP/usr/lib/jvm/java-11-openjdk"
