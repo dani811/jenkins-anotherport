@@ -1,4 +1,4 @@
-name: jenkins-anotherport
+name: jenkins-8081
 summary: Jenkins automation server
 base: core18
 description: |
