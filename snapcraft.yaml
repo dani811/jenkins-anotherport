@@ -10,47 +10,77 @@ adopt-info: jenkins
 confinement: classic
 apps:
     jenkins:
-        environment:
-          SNAPCRAFT_BUILD_ENVIRONMENT: "host snapcraft --target-arch arm64"
-          XDG_DATA_HOME: "$SNAP/usr/share"
-          FONTCONFIG_PATH: "$SNAP/etc/fonts"
-          JAVA_HOME: "$SNAP/usr/lib/jvm/java-11-openjdk"
-          LD_LIBRARY_PATH: "$SNAP/usr/lib/$SNAPCRAFT_ARCH_TRIPLET:$LD_LIBRARY_PATH"
-        command: |
-            usr/lib/jvm/java-11-openjdk/bin/java -DJENKINS_HOME="$SNAP_DATA" -Djava.awt.headless=true -jar $SNAP/jenkins.war --httpPort=8091
+        command: java -DJENKINS_HOME="$SNAP_DATA" -Djava.awt.headless=true -jar $SNAP/war/jenkins.war --httpPort=8091
+        plugs: [network, network-bind]
         daemon: simple
     config:
         command: jenkins-config
-
 parts:
-    bsi-trigger: # A non-built part, only used to trigger builds in build.snapcraft.io on upstream changes
-        plugin: nil
-        source: https://github.com/jenkinsci/jenkins.git
+    maven:
+        plugin: copy
+        source: http://apache.osuosl.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+        files:
+            bin: bin
+            conf: conf
+            lib: lib
+            boot: boot
     jenkins:
+        plugin: jenkins
+        source: https://github.com/jenkinsci/jenkins
+        source-tag: jenkins-2.8
+        source-type: git
+        after:
+            - maven
+        stage-packages:
+            - default-jdk
+            # Jenkins wants fonts.
+            - fonts-dejavu-core
+        snap:
+            - war/jenkins.war
+            - usr/lib/jvm/default-java/bin
+            - usr/lib/jvm/default-java/lib
+            - usr/lib/jvm/default-java/jre/bin
+            - usr/lib/jvm/default-java/jre/lib
+            - etc/java-*
+            # Jenkins wants fonts.
+            - etc/fonts/fonts.conf
+            - usr/share/fonts
+            - usr/lib/*/libfontconfig*
+    git:
+        # Git support.
         plugin: nil
         stage-packages:
-            - fonts-dejavu-core
-            - libfontconfig1
-            - openjdk-11-jre-headless
-            - ca-certificates-java
-        build-packages:
-            - curl
-            - unzip
-            - libnss3
-            - ca-certificates-java
-        override-build: |
-            curl -sLO http://mirrors.jenkins.io/war/latest/jenkins.war
-            unzip jenkins.war META-INF/MANIFEST.MF
-            VERSION=$(grep Jenkins-Version META-INF/MANIFEST.MF | cut -d' ' -f2 | tr -d '\r')
-            rm META-INF/MANIFEST.MF
-            mv $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk-* $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk
-            rm $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk/lib/security/cacerts
-            cp /etc/ssl/certs/java/cacerts $SNAPCRAFT_PART_INSTALL/usr/lib/jvm/java-11-openjdk/lib/security/cacerts
-            cp /etc/ssl/certs/java/cacerts $SNAPCRAFT_PART_INSTALL/etc/ssl/certs/java/cacerts
-            mv jenkins.war $SNAPCRAFT_PART_INSTALL
-            snapcraftctl set-version "$VERSION"
+            - git
+        snap:
+            - usr/bin/git*
+            - usr/lib/git*
+            - usr/lib/*/libasn1.so*
+            - usr/lib/*/libcurl-gnutls.so*
+            - usr/lib/*/libffi.so*
+            - usr/lib/*/libgmp.so*
+            - usr/lib/*/libgnutls.so*
+            - usr/lib/*/libgssapi.so*
+            - usr/lib/*/libgssapi_krb5.so*
+            - usr/lib/*/libhcrypto.so*
+            - usr/lib/*/libheimbase.so*
+            - usr/lib/*/libheimntlm.so*
+            - usr/lib/*/libhogweed.so*
+            - usr/lib/*/libhx509.so*
+            - usr/lib/*/libidn.so*
+            - usr/lib/*/libk5crypto.so*
+            - usr/lib/*/libkrb5.so*
+            - usr/lib/*/libkrb5support.so*
+            - usr/lib/*/liblber-2.4.so*
+            - usr/lib/*/libldap_r-2.4.so*
+            - usr/lib/*/libnettle.so*
+            - usr/lib/*/libp11-kit.so*
+            - usr/lib/*/libroken.so*
+            - usr/lib/*/librtmp.so*
+            - usr/lib/*/libsasl2.so*
+            - usr/lib/*/libsqlite3.so*
+            - usr/lib/*/libtasn1.so*
+            - usr/lib/*/libwind.so*
     config:
-        plugin: dump
-        source: snap/local
-        prime:
-            - jenkins-config
+        plugin: copy
+        files:
+            jenkins-config: bin/jenkins-config
