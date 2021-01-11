@@ -81,6 +81,6 @@ parts:
             - usr/lib/*/libtasn1.so*
             - usr/lib/*/libwind.so*
     config:
-        plugin: copy
+        plugin: dump
         files:
             jenkins-config: bin/jenkins-config
