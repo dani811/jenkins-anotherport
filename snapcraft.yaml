@@ -17,7 +17,7 @@ apps:
         command: jenkins-config
 parts:
     maven:
-        plugin: copy
+        plugin: dump
         source: http://apache.osuosl.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
         files:
             bin: bin
