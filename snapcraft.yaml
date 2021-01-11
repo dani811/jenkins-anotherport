@@ -19,7 +19,7 @@ parts:
     maven:
         plugin: dump
         source: http://apache.osuosl.org/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
-        files:
+        organize:
             bin: bin
             conf: conf
             lib: lib
@@ -82,5 +82,5 @@ parts:
             - usr/lib/*/libwind.so*
     config:
         plugin: dump
-        files:
+        organize:
             jenkins-config: bin/jenkins-config
